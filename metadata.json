@@ -1,0 +1,8 @@
+{
+  "name": "Zibbo eCommerce",
+  "description": "Premium modern eCommerce website for Zibbo, featuring trending gadgets and viral products.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
