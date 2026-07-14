@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, User, Heart, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, User, LogOut, ShoppingBag, Menu, X, Heart, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import { products } from '../data';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { navigate, cart } = useAppContext();
+  const { navigate, cart, products, user, login, logout, wishlist, isAdmin } = useAppContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,6 +20,36 @@ export default function Header() {
 
   const searchResults = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  const handleAuthAction = () => {
+    setIsDrawerOpen(false);
+    if (!user) {
+      login();
+    } else {
+      logout();
+    }
+  };
+
+  const drawerLinks = user ? [
+    { label: 'My Account', action: () => { setIsDrawerOpen(false); isAdmin ? navigate('admin') : navigate('home'); } },
+    { label: 'My Orders', action: () => { setIsDrawerOpen(false); navigate('home'); } }, // Replace with real view later
+    { label: 'Wishlist', action: () => { setIsDrawerOpen(false); navigate('wishlist'); } },
+    { label: 'Logout', action: handleAuthAction },
+  ] : [
+    { label: 'Sign In', action: handleAuthAction },
+  ];
+
+  const commonLinks = [
+    { label: 'Collections', action: () => { setIsDrawerOpen(false); navigate('collections'); } },
+    { label: 'Track Order', action: () => { setIsDrawerOpen(false); } },
+    { label: 'Contact Us', action: () => { setIsDrawerOpen(false); } },
+    { label: 'Shipping Policy', action: () => { setIsDrawerOpen(false); } },
+    { label: 'Refund Policy', action: () => { setIsDrawerOpen(false); } },
+    { label: 'Privacy Policy', action: () => { setIsDrawerOpen(false); } },
+    { label: 'Terms & Conditions', action: () => { setIsDrawerOpen(false); } },
+  ];
+
+  const allLinks = [...drawerLinks, ...commonLinks];
+
   return (
     <>
       <header 
@@ -30,25 +60,22 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             
-            {/* LEFT: Logo mark */}
-            <div className="flex-1 flex justify-start">
-               <button onClick={() => navigate('home')} className="w-8 h-8 bg-brand-navy text-white flex items-center justify-center font-bold italic tracking-tighter rounded">
-                 Z
+            {/* LEFT: Logo and Brand Name */}
+            <div className="flex items-center space-x-3">
+               <button onClick={() => navigate('home')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                 <img src="https://i.imgur.com/GmP5uNs.png" alt="ZIBBO Logo" className="h-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                 <span className="text-2xl font-black tracking-tighter italic text-brand-navy">
+                   ZIBBO
+                 </span>
                </button>
             </div>
 
-            {/* CENTER: Brand name */}
-            <div className="flex-1 flex justify-center">
-              <button onClick={() => navigate('home')} className="text-2xl font-black tracking-tighter italic text-brand-navy hover:opacity-70 transition-opacity">
-                ZIBBO
-              </button>
-            </div>
-
             {/* RIGHT: Icons */}
-            <div className="flex-1 flex items-center justify-end space-x-4">
+            <div className="flex items-center space-x-5">
               <button onClick={() => { setIsSearchOpen(!isSearchOpen); setSearchQuery(''); }} className="text-brand-navy hover:opacity-70 transition-opacity">
                 {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
               </button>
+              
               <button onClick={() => navigate('cart')} className="text-brand-navy hover:opacity-70 transition-opacity relative">
                 <ShoppingBag className="w-5 h-5" />
                 {cart.length > 0 && (
@@ -57,13 +84,65 @@ export default function Header() {
                   </span>
                 )}
               </button>
-              <button className="text-brand-navy hover:opacity-70 transition-opacity">
+
+              <button onClick={() => setIsDrawerOpen(true)} className="text-brand-navy hover:opacity-70 transition-opacity pl-1">
                 <Menu className="w-6 h-6" />
               </button>
             </div>
           </div>
         </div>
       </header>
+
+      {/* SIDE DRAWER */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDrawerOpen(false)}
+              className="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-50"
+            />
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white z-50 shadow-2xl flex flex-col"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="font-black tracking-tighter italic text-brand-navy text-xl">ZIBBO</div>
+                <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-brand-navy">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto py-6">
+                <nav className="flex flex-col">
+                  {allLinks.map((link, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={link.action}
+                      className="flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors group"
+                    >
+                      <span className={`font-bold uppercase tracking-widest text-xs ${link.label === 'Logout' ? 'text-red-500' : 'text-brand-navy'}`}>
+                        {link.label}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-brand-navy transition-colors" />
+                    </button>
+                  ))}
+                </nav>
+              </div>
+              {user && (
+                <div className="p-6 bg-gray-50 border-t border-gray-100">
+                  <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Logged in as</div>
+                  <div className="text-sm font-bold text-brand-navy truncate">{user.email}</div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* SEARCH OVERLAY */}
       <AnimatePresence>

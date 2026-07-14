@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://zibbo.com/sitemap.xml

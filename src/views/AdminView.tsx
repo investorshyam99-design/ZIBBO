@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../AppContext';
-import { LayoutDashboard, ShoppingCart, Users, Package, Archive, Layers, Tag, BarChart2, Settings } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, Package, Archive, Layers, Tag, BarChart2, Settings, Star, Database, LogOut } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function AdminView() {
-  const { orders } = useAppContext();
+  const { orders, logout, navigate } = useAppContext();
   const [activeTab, setActiveTab] = useState('orders');
 
   const tabs = [
@@ -11,15 +12,18 @@ export default function AdminView() {
     { id: 'orders', icon: ShoppingCart, label: 'Orders' },
     { id: 'customers', icon: Users, label: 'Customers' },
     { id: 'products', icon: Package, label: 'Products' },
-    { id: 'inventory', icon: Archive, label: 'Inventory' },
     { id: 'collections', icon: Layers, label: 'Collections' },
+    { id: 'inventory', icon: Archive, label: 'Inventory' },
+    { id: 'reviews', icon: Star, label: 'Reviews' },
     { id: 'coupons', icon: Tag, label: 'Coupons' },
     { id: 'analytics', icon: BarChart2, label: 'Analytics' },
-    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'website_settings', icon: Settings, label: 'Website Settings' },
+    { id: 'firebase_settings', icon: Database, label: 'Firebase Settings' },
   ];
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-brand-offwhite pb-20 md:pb-0">
+      <SEO title="Admin Dashboard | ZIBBO" />
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-white border-r border-gray-100 shrink-0 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto no-scrollbar">
          <div className="p-6 hidden md:block border-b border-gray-100">
@@ -40,6 +44,16 @@ export default function AdminView() {
                    </button>
                )
             })}
+            <button 
+               onClick={() => {
+                  logout();
+                  navigate('home');
+               }}
+               className="flex items-center px-4 py-3 rounded-lg text-sm font-semibold transition-colors text-red-500 hover:bg-red-50 mt-auto md:mt-4"
+            >
+               <LogOut className="w-4 h-4 mr-3 shrink-0" />
+               Logout
+            </button>
          </div>
       </div>
 

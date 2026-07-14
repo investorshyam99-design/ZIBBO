@@ -1,117 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { useAppContext } from '../AppContext';
-import { Star, ShoppingCart, Eye } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { Product } from '../types';
 
 export default function StoreProducts() {
-  const { navigate, addToCart } = useAppContext();
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { navigate, addToCart, products, wishlist, toggleWishlist } = useAppContext();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        let domain = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN;
-        const token = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
-
-        if (!domain || domain === 'your-store.myshopify.com') {
-          setError('Please configure your Store Domain in the environment variables.');
-          setLoading(false);
-          return;
-        }
-
-        domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-
-        const query = `
-          {
-            products(first: 20) {
-              edges {
-                node {
-                  id
-                  title
-                  handle
-                  images(first: 1) {
-                    edges {
-                      node {
-                        url
-                      }
-                    }
-                  }
-                  priceRange {
-                    minVariantPrice {
-                      amount
-                      currencyCode
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `;
-
-        const response = await fetch(`https://${domain}/api/2024-01/graphql.json`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Storefront-Access-Token': token,
-          },
-          body: JSON.stringify({ query })
-        });
-
-        const json = await response.json();
-        
-        if (json.errors) {
-          throw new Error(json.errors[0].message);
-        }
-
-        const formattedProducts = json.data.products.edges.map(({ node }: any) => {
-          const shopifyPrice = parseFloat(node.priceRange.minVariantPrice.amount);
-          const originalPrice = (shopifyPrice * 2) + 1;
-
-          return {
-            id: node.id,
-            name: node.title,
-            price: shopifyPrice,
-            originalPrice: originalPrice,
-            image: node.images.edges[0]?.node.url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1000',
-            category: 'Premium Gadget',
-            rating: 4.8,
-            reviews: Math.floor(Math.random() * 500) + 50,
-            description: 'Premium quality product.',
-            badges: ['Trending']
-          };
-        });
-
-        setProducts(formattedProducts);
-        setLoading(false);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch products');
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) {
+  if (products.length === 0) {
     return (
       <div className="py-24 text-center">
         <div className="w-12 h-12 border-4 border-brand-navy border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-brand-navy font-bold tracking-widest uppercase text-xs">Loading Products...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="py-24 text-center px-4 max-w-2xl mx-auto">
-        <div className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-100">
-          <h3 className="font-bold mb-2">Setup Required</h3>
-          <p className="text-sm">{error}</p>
-          <p className="text-xs mt-4 text-red-500 font-medium">Please add VITE_SHOPIFY_STORE_DOMAIN to your secrets/env variables.</p>
-        </div>
       </div>
     );
   }
@@ -136,9 +36,21 @@ export default function StoreProducts() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="card-hover bg-white rounded-xl overflow-hidden flex flex-col relative cursor-pointer border border-gray-100"
               onClick={() => {
-                navigate('product', product.id, product as unknown as Product);
+                navigate('product', product.id, product);
               }}
             >
+              <div className="absolute top-4 right-4 z-10">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist(product.id);
+                  }}
+                  className="w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-brand-navy shadow-md hover:scale-110 transition-transform"
+                >
+                  <Heart className={`w-4 h-4 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                </button>
+              </div>
+
               {/* Image */}
               <div className="aspect-[4/5] bg-gray-50 overflow-hidden relative group">
                 <img 
@@ -152,7 +64,7 @@ export default function StoreProducts() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(product as unknown as Product, 1);
+                      addToCart(product, 1);
                     }}
                     className="w-full bg-white/90 backdrop-blur text-brand-navy font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-lg hover:bg-brand-navy hover:text-white transition-colors flex items-center justify-center"
                   >
@@ -176,9 +88,11 @@ export default function StoreProducts() {
                     <span className="font-black text-brand-navy text-base md:text-lg">
                       ₹{product.price.toLocaleString()}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-400 line-through font-medium">
-                      ₹{product.originalPrice.toLocaleString()}
-                    </span>
+                    {product.originalPrice && (
+                      <span className="text-xs md:text-sm text-gray-400 line-through font-medium">
+                        ₹{product.originalPrice.toLocaleString()}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

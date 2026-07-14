@@ -8,7 +8,7 @@ export default function BottomNav() {
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'search', icon: Search, label: 'Search' },
-    { id: 'collections', icon: LayoutGrid, label: 'Collections' },
+    { id: 'collections', icon: LayoutGrid, label: 'Catalog' },
     { id: 'admin', icon: User, label: 'Account' },
     { id: 'cart', icon: ShoppingBag, label: 'Cart' }
   ];

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import { products } from '../data';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 import AnnouncementBar from '../components/AnnouncementBar';
+import SEO from '../components/SEO';
 
 export default function CollectionsView() {
-  const { navigate, addToCart } = useAppContext();
+  const { navigate, addToCart, products, wishlist, toggleWishlist } = useAppContext();
   const [sortBy, setSortBy] = useState('featured');
   const [filterCategory, setFilterCategory] = useState('All');
 
@@ -30,6 +30,7 @@ export default function CollectionsView() {
 
   return (
     <div className="min-h-screen bg-brand-offwhite pb-20 md:pb-0">
+      <SEO title="Collections | ZIBBO" description="Explore our exclusive collections of premium gadgets and lifestyle accessories." />
       <AnnouncementBar />
       <Header />
       
@@ -79,6 +80,18 @@ export default function CollectionsView() {
                 className="card-hover bg-white rounded-xl overflow-hidden flex flex-col relative cursor-pointer border border-gray-100"
                 onClick={() => navigate('product', product.id)}
               >
+                <div className="absolute top-4 right-4 z-10">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(product.id);
+                    }}
+                    className="w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-brand-navy shadow-md hover:scale-110 transition-transform"
+                  >
+                    <Heart className={`w-4 h-4 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                  </button>
+                </div>
+                
                 <div className="aspect-[4/5] bg-gray-50 overflow-hidden relative group">
                   <img 
                     src={product.image} 

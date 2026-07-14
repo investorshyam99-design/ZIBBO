@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppContext } from '../AppContext';
 import { Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function CartView() {
   const { cart, updateQuantity, removeFromCart, navigate } = useAppContext();
@@ -8,6 +9,7 @@ export default function CartView() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 min-h-screen pb-32">
+      <SEO title="Shopping Cart | ZIBBO" description="View items in your shopping cart." />
       <h1 className="text-3xl font-black tracking-tight text-brand-navy mb-8">Shopping Cart</h1>
       
       {cart.length === 0 ? (

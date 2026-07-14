@@ -1,41 +1,57 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { CheckCircle2 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function CheckoutView() {
-  const { cart, clearCart, addOrder, navigate } = useAppContext();
+  const { cart, clearCart, addOrder, navigate, user, login } = useAppContext();
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   
   const [formData, setFormData] = useState({
-    fullName: '', mobile: '', email: '', houseFlat: '', address: '', city: '', state: '', pincode: ''
+    fullName: user?.displayName || '', mobile: '', email: user?.email || '', houseFlat: '', address: '', city: '', state: '', pincode: ''
   });
   
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert("Please login to place an order.");
+      login();
+      return;
+    }
+
+    setIsSubmitting(true);
     const productNames = cart.map(c => `${c.product.name} (x${c.quantity})`).join(', ');
     const totalQty = cart.reduce((sum, c) => sum + c.quantity, 0);
     
-    addOrder({
+    await addOrder({
       orderNumber: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
+      userId: user.uid,
       customerName: formData.fullName,
       mobile: formData.mobile,
       address: `${formData.houseFlat}, ${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`,
       productNames,
+      items: cart,
       quantity: totalQty,
       paymentStatus: 'Prepaid',
       orderStatus: 'Processing',
-      dateTime: new Date().toLocaleString()
+      dateTime: new Date().toLocaleString(),
+      total: subtotal,
+      status: 'Processing',
+      createdAt: Date.now()
     });
     
+    setIsSubmitting(false);
     setIsSuccess(true);
-    clearCart();
+    // clearCart is handled in addOrder context
   };
 
   if (isSuccess) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-20 text-center">
+        <SEO title="Order Confirmed | ZIBBO" />
         <CheckCircle2 className="w-16 h-16 text-green-500 mb-6" />
         <h1 className="text-3xl font-black tracking-tight text-brand-navy mb-4">Order Confirmed!</h1>
         <p className="text-gray-500 mb-8 max-w-md mx-auto text-sm">Your order has been placed successfully and is now being processed. You can track it in the Admin Dashboard.</p>
@@ -53,6 +69,7 @@ export default function CheckoutView() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 min-h-screen pb-32">
+      <SEO title="Checkout | ZIBBO" description="Securely checkout your premium items." />
       <h1 className="text-3xl font-black tracking-tight text-brand-navy mb-8">Checkout</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
@@ -121,8 +138,8 @@ export default function CheckoutView() {
               </div>
             </div>
             
-            <button form="checkout-form" type="submit" className="w-full pill-btn bg-brand-navy text-white py-4 text-xs font-bold uppercase tracking-widest shadow-premium hover:opacity-90 transition-opacity disabled:opacity-50" disabled={cart.length === 0}>
-              Place Order & Pay
+            <button form="checkout-form" type="submit" className="w-full pill-btn bg-brand-navy text-white py-4 text-xs font-bold uppercase tracking-widest shadow-premium hover:opacity-90 transition-opacity disabled:opacity-50" disabled={cart.length === 0 || isSubmitting}>
+              {isSubmitting ? 'Processing...' : 'Place Order & Pay'}
             </button>
           </div>
         </div>

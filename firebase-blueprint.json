@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A product available in the store",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 150 },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "image": { "type": "string", "maxLength": 1024 },
+        "images": { "type": "array", "items": { "type": "string" }, "maxLength": 10 },
+        "category": { "type": "string", "maxLength": 50 },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "description": { "type": "string", "maxLength": 5000 },
+        "badges": { "type": "array", "items": { "type": "string" }, "maxLength": 5 },
+        "isNew": { "type": "boolean" },
+        "stock": { "type": "number" }
+      },
+      "required": ["name", "price", "image", "category"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "An order placed by a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "items": { "type": "array", "maxLength": 100 },
+        "total": { "type": "number" },
+        "status": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User account information",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 255 },
+        "displayName": { "type": "string", "maxLength": 150 },
+        "photoURL": { "type": "string", "maxLength": 1024 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "CartItem": {
+      "title": "CartItem",
+      "description": "An item in the user's cart",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string", "maxLength": 128 },
+        "quantity": { "type": "number" },
+        "addedAt": { "type": "number" }
+      },
+      "required": ["productId", "quantity", "addedAt"]
+    },
+    "WishlistItem": {
+      "title": "WishlistItem",
+      "description": "An item in the user's wishlist",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string", "maxLength": 128 },
+        "addedAt": { "type": "number" }
+      },
+      "required": ["productId", "addedAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review for a product",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "rating": { "type": "number" },
+        "text": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["productId", "userId", "rating", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Publicly readable list of products."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Orders placed by users. Users can only read/write their own orders."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles. Users can only read/write their own profiles."
+    },
+    "/users/{userId}/cart/{cartItemId}": {
+      "schema": "CartItem",
+      "description": "User's cart items."
+    },
+    "/users/{userId}/wishlist/{wishlistItemId}": {
+      "schema": "WishlistItem",
+      "description": "User's wishlist items."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product reviews. Publicly readable, users can only write their own."
+    }
+  }
+}
