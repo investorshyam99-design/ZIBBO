@@ -7,7 +7,7 @@ const NAMES = ['Sam', 'Kiya', 'Kashish', 'Aarav', 'Vihaan', 'Reyansh', 'Ayaan', 
 const CITIES = ['Mumbai', 'Delhi', 'Noida', 'Pune', 'Nashik', 'Jalgaon', 'Bengaluru', 'Hyderabad', 'Ahmedabad', 'Surat', 'Jaipur', 'Indore', 'Nagpur', 'Lucknow', 'Kolkata', 'Chennai'];
 
 export default function LivePurchasePopup() {
-  const { currentView, selectedProductObj, products } = useAppContext();
+  const { currentView, selectedProductObj, products, isCartDrawerOpen } = useAppContext();
   const [isVisible, setIsVisible] = useState(false);
   const [notification, setNotification] = useState<{
     name: string;
@@ -41,7 +41,7 @@ export default function LivePurchasePopup() {
         // Auto hide after 5 seconds
         hideTimeout = setTimeout(() => {
           setIsVisible(false);
-        }, 5000);
+        }, 3000);
       }
     };
 
@@ -49,10 +49,10 @@ export default function LivePurchasePopup() {
     const initialDelay = setTimeout(() => {
       showNotification();
       
-      // Then show every 15 seconds
+      // Then show every 30 seconds
       interval = setInterval(() => {
         showNotification();
-      }, 15000);
+      }, 40000);
     }, 5000);
 
     return () => {
@@ -61,6 +61,8 @@ export default function LivePurchasePopup() {
       clearTimeout(hideTimeout);
     };
   }, [currentView, selectedProductObj, products]);
+
+  if (isCartDrawerOpen || currentView === 'cart' || currentView === 'checkout') return null;
 
   return (
     <AnimatePresence>

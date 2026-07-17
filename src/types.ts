@@ -6,6 +6,7 @@ export interface Product {
   rating: number;
   reviews: number;
   image: string;
+  images?: string[];
   category: string;
   badges?: string[];
   isNew?: boolean;

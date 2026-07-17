@@ -22,7 +22,7 @@ export default function StoreProducts() {
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-brand-navy mb-3">Our Collection</h2>
-            <p className="text-gray-500 text-sm max-w-md">Premium products directly from our store.</p>
+            
           </div>
         </div>
 
@@ -53,6 +53,11 @@ export default function StoreProducts() {
 
               {/* Image */}
               <div className="aspect-[4/5] bg-gray-50 overflow-hidden relative group">
+                {product.badges && product.badges.length > 0 && (
+                  <span className="absolute top-4 left-4 z-10 bg-white text-brand-navy text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-widest">
+                    {product.badges[0]}
+                  </span>
+                )}
                 <img 
                   src={product.image} 
                   alt={product.name} 
@@ -75,9 +80,6 @@ export default function StoreProducts() {
 
               {/* Content */}
               <div className="p-4 md:p-5 flex-1 flex flex-col">
-                <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                  {product.category}
-                </div>
                 
                 <h3 className="font-bold text-brand-navy text-sm md:text-base leading-snug mb-2 line-clamp-2">
                   {product.name}

@@ -62,7 +62,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="text-sm font-bold truncate text-brand-navy">
             {product.name}
           </h3>
-          <p className="text-xs text-gray-500 mt-1">{product.category}</p>
         </div>
         
         <div className="flex justify-between items-center mt-3">

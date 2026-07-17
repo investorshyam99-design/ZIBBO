@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import BottomNav from '../components/BottomNav';
-import AnnouncementBar from '../components/AnnouncementBar';
 import SEO from '../components/SEO';
 
 export default function CollectionsView() {
+  const { id } = useParams();
   const { navigate, addToCart, products, wishlist, toggleWishlist } = useAppContext();
   const [sortBy, setSortBy] = useState('featured');
-  const [filterCategory, setFilterCategory] = useState('All');
+  const [filterCategory, setFilterCategory] = useState(id ? id.replace(/-/g, ' ') : 'All');
+
+  useEffect(() => {
+    if (id) setFilterCategory(id.replace(/-/g, ' '));
+    else setFilterCategory('All');
+  }, [id]);
 
   const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
@@ -29,10 +32,18 @@ export default function CollectionsView() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-offwhite pb-20 md:pb-0">
-      <SEO title="Collections | ZIBBO" description="Explore our exclusive collections of premium gadgets and lifestyle accessories." />
-      <AnnouncementBar />
-      <Header />
+    <div className="bg-brand-offwhite pb-20 md:pb-0">
+      <SEO 
+        title={`${filterCategory === 'All' ? 'Collections' : filterCategory.charAt(0).toUpperCase() + filterCategory.slice(1)} | ZIBBO`} 
+        description={`Explore our curated ${filterCategory} collection at ZIBBO. Find the best deals and trending items.`}
+        type="website"
+        url={`https://zibbo.com/collections${id ? '/' + id : ''}`}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://zibbo.com' },
+          { name: 'Collections', url: 'https://zibbo.com/collections' },
+          ...(id ? [{ name: filterCategory.charAt(0).toUpperCase() + filterCategory.slice(1), url: `https://zibbo.com/collections/${id}` }] : [])
+        ]}
+      />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -93,6 +104,11 @@ export default function CollectionsView() {
                 </div>
                 
                 <div className="aspect-[4/5] bg-gray-50 overflow-hidden relative group">
+                {product.badges && product.badges.length > 0 && (
+                  <span className="absolute top-4 left-4 z-10 bg-white text-brand-navy text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-widest">
+                    {product.badges[0]}
+                  </span>
+                )}
                   <img 
                     src={product.image} 
                     alt={product.name} 
@@ -136,9 +152,6 @@ export default function CollectionsView() {
           </div>
         )}
       </main>
-
-      <Footer />
-      <BottomNav />
     </div>
   );
 }

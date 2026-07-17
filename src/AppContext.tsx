@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from './types';
 import { db, auth, OperationType, handleFirestoreError } from './firebase';
@@ -30,6 +31,8 @@ export interface Order {
 }
 
 interface AppContextType {
+  isCartDrawerOpen: boolean;
+  setIsCartDrawerOpen: (open: boolean) => void;
   user: User | null;
   isAdmin: boolean;
   loadingAuth: boolean;
@@ -54,7 +57,10 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const routerNavigate = useNavigate();
+  // Remove old routing states
   const [currentView, setCurrentView] = useState<ViewState>('home');
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedProductObj, setSelectedProductObj] = useState<Product | null>(null);
   
@@ -159,11 +165,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           throw new Error(json.errors[0].message);
         }
 
-        const badges = ['Best Seller', 'Trending', 'Limited Stock', 'Selling Fast', 'New Arrival', 'Fan Favourite', 'Must Have', 'Hot Pick'];
+        const badges = ['🔥 Trending', '⭐ Best Seller', '⚡ Must Have', '⏳ Limited Stock', '❤️ Customer Favourite', '🚀 Selling Fast', '✨ New Arrival'];
 
         const formattedProducts = json.data.products.edges.map(({ node }: any) => {
           const shopifyPrice = parseFloat(node.priceRange.minVariantPrice.amount);
-          const originalPrice = shopifyPrice > 0 ? (shopifyPrice * 1.5) : 0;
+          const originalPrice = shopifyPrice > 0 ? (shopifyPrice * 2) + 1 : 0;
           
           // Truly random badge per page load
           const randomBadgeIndex = Math.floor(Math.random() * badges.length);
@@ -175,7 +181,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             originalPrice: originalPrice,
             image: node.images.edges[0]?.node.url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1000',
             images: node.images.edges.map((e: any) => e.node.url),
-            category: 'Premium Gadget',
+            category: node.productType || 'Product',
             rating: parseFloat((Math.random() * (4.9 - 4.0) + 4.0).toFixed(1)),
             reviews: Math.floor(Math.random() * (199 - 50 + 1)) + 50,
             description: 'Premium quality product meticulously designed for your everyday needs.',
@@ -185,7 +191,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           };
         });
 
+        
+        
         setProducts(formattedProducts);
+
       } catch (err) {
         console.error('Failed to fetch Shopify products', err);
       }
@@ -274,12 +283,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const navigate = (view: ViewState, productId?: string, productObj?: Product) => {
     setCurrentView(view);
-    if (productId) {
-      setSelectedProductId(productId);
-    }
-    if (productObj) {
-      setSelectedProductObj(productObj);
-    }
+    if (productId) setSelectedProductId(productId);
+    if (productObj) setSelectedProductObj(productObj);
+    
+    if (view === 'home') routerNavigate('/');
+    else if (view === 'product' && productId) routerNavigate('/product/' + productId);
+    else routerNavigate('/' + view);
+    
     window.scrollTo(0, 0);
   };
 
@@ -305,6 +315,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           addedAt: serverTimestamp(),
         });
       }
+      setIsCartDrawerOpen(true);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}/cart/${product.id}`);
     }
@@ -382,7 +393,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AppContext.Provider value={{ 
+    <AppContext.Provider value={{
+      isCartDrawerOpen,
+      setIsCartDrawerOpen, 
       user, isAdmin, loadingAuth, login, logout, 
       currentView, navigate, selectedProductId, selectedProductObj, 
       products, cart, addToCart, removeFromCart, updateQuantity, clearCart, 

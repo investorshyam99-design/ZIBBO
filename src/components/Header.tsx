@@ -61,8 +61,8 @@ export default function Header() {
           <div className="flex items-center justify-between">
             
             {/* LEFT: Logo and Brand Name */}
-            <div className="flex items-center space-x-3">
-               <button onClick={() => navigate('home')} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+            <div className="flex items-center space-x-6">
+               <button onClick={() => navigate('home')} className="flex items-center space-x-6 hover:opacity-80 transition-opacity">
                  <img src="https://i.imgur.com/GmP5uNs.png" alt="ZIBBO Logo" className="h-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                  <span className="text-2xl font-black tracking-tighter italic text-brand-navy">
                    ZIBBO
