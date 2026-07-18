@@ -71,7 +71,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    const saved = localStorage.getItem('zibbo_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Auth Listener
   useEffect(() => {
@@ -242,41 +245,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Cart Listener
   useEffect(() => {
-    if (!user) {
-      setCart([]);
-      return;
+    const savedCart = localStorage.getItem('zibbo_cart');
+    if (savedCart) {
+      try {
+        const parsed = JSON.parse(savedCart);
+        // re-hydrate with actual products
+        const validCart = parsed.map((item: any) => {
+          const product = products.find(p => p.id === item.productId);
+          return product ? { product, quantity: item.quantity } : null;
+        }).filter(Boolean);
+        setCart(validCart);
+      } catch (e) {}
     }
-    const q = query(collection(db, `users/${user.uid}/cart`));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const cartItems: CartItem[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const product = products.find(p => p.id === data.productId);
-        if (product) {
-          cartItems.push({ product, quantity: data.quantity });
-        }
-      });
-      setCart(cartItems);
-    }, (error) => handleFirestoreError(error, OperationType.GET, `users/${user.uid}/cart`));
-    return () => unsubscribe();
-  }, [user, products]);
-
-  // Wishlist Listener
+  }, [products]);
+  
+  // Sync cart to local storage
   useEffect(() => {
-    if (!user) {
-      setWishlist([]);
-      return;
+    if (products.length > 0) {
+      localStorage.setItem('zibbo_cart', JSON.stringify(cart.map(item => ({ productId: item.product.id, quantity: item.quantity }))));
     }
-    const q = query(collection(db, `users/${user.uid}/wishlist`));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items: string[] = [];
-      snapshot.forEach((docSnap) => {
-        items.push(docSnap.data().productId);
-      });
-      setWishlist(items);
-    }, (error) => handleFirestoreError(error, OperationType.GET, `users/${user.uid}/wishlist`));
-    return () => unsubscribe();
-  }, [user]);
+  }, [cart, products]);
+
+  
 
   // Orders Listener
   useEffect(() => {
@@ -331,95 +321,43 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addToCart = async (product: Product, quantity: number) => {
-    if (!user) {
-      alert("Please login to add items to your cart.");
-      login();
-      return;
-    }
-    const existing = cart.find(item => item.product.id === product.id);
-    const cartRef = doc(db, `users/${user.uid}/cart`, product.id);
-    
-    try {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
-        await updateDoc(cartRef, {
-          quantity: existing.quantity + quantity,
-          addedAt: serverTimestamp(),
-        });
-      } else {
-        await setDoc(cartRef, {
-          productId: product.id,
-          quantity,
-          addedAt: serverTimestamp(),
-        });
+        return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
       }
-      setIsCartDrawerOpen(true);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}/cart/${product.id}`);
-    }
+      return [...prev, { product, quantity }];
+    });
+    setIsCartDrawerOpen(true);
   };
 
   const removeFromCart = async (productId: string) => {
-    if (!user) return;
-    try {
-      await deleteDoc(doc(db, `users/${user.uid}/cart`, productId));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `users/${user.uid}/cart/${productId}`);
-    }
+    setCart(prev => prev.filter(item => item.product.id !== productId));
   };
 
   const updateQuantity = async (productId: string, quantity: number) => {
-    if (!user) return;
-    if (quantity <= 0) {
-      await removeFromCart(productId);
-      return;
-    }
-    try {
-      await updateDoc(doc(db, `users/${user.uid}/cart`, productId), {
-        quantity,
-        addedAt: serverTimestamp()
-      });
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}/cart/${productId}`);
-    }
+    if (quantity < 1) return;
+    setCart(prev => prev.map(item => item.product.id === productId ? { ...item, quantity } : item));
   };
 
   const clearCart = async () => {
-    if (!user) return;
-    try {
-      for (const item of cart) {
-        await deleteDoc(doc(db, `users/${user.uid}/cart`, item.product.id));
-      }
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `users/${user.uid}/cart`);
-    }
+    setCart([]);
   };
 
   const toggleWishlist = async (productId: string) => {
-    if (!user) {
-      alert("Please login to manage your wishlist.");
-      login();
-      return;
-    }
-    const isWished = wishlist.includes(productId);
-    const itemRef = doc(db, `users/${user.uid}/wishlist`, productId);
-    try {
-      if (isWished) {
-        await deleteDoc(itemRef);
-      } else {
-        await setDoc(itemRef, { productId, addedAt: serverTimestamp() });
-      }
-    } catch (error) {
-      handleFirestoreError(error, isWished ? OperationType.DELETE : OperationType.WRITE, `users/${user.uid}/wishlist/${productId}`);
-    }
+    setWishlist(prev => {
+      const newWishlist = prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId];
+      localStorage.setItem('zibbo_wishlist', JSON.stringify(newWishlist));
+      return newWishlist;
+    });
   };
 
   const addOrder = async (order: Order) => {
-    if (!user) return;
     const orderRef = doc(collection(db, 'orders'));
     try {
       await setDoc(orderRef, {
         ...order,
-        userId: user.uid,
+        userId: user ? user.uid : 'guest',
         status: 'Processing',
         createdAt: serverTimestamp()
       });
