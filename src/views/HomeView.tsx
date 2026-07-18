@@ -1,5 +1,5 @@
 import React from 'react';
-import ShopTheLook from '../components/ShopTheLook';
+import AutoScrollingBanner from '../components/AutoScrollingBanner';
 import Features from '../components/Features';
 import NewArrivals from '../components/NewArrivals';
 import CustomerFavorites from '../components/CustomerFavorites';
@@ -15,7 +15,7 @@ export default function HomeView() {
         description="Discover trending and premium products at ZIBBO. Shop our curated collections."
         type="website"
       />
-      <ShopTheLook />
+      <AutoScrollingBanner />
       <Features />
       <NewArrivals />
       <CustomerFavorites />

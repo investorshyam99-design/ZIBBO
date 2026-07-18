@@ -1,4 +1,8 @@
 export interface Product {
+  description?: string;
+  video?: string;
+  collections?: string[];
+  variants?: any[];
   id: string;
   name: string;
   price: number;

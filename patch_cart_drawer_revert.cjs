@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+const fs = require('fs');
+
+const code = `import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { useAppContext } from '../AppContext';
@@ -109,3 +111,6 @@ export default function CartDrawer() {
     </AnimatePresence>
   );
 }
+`;
+
+fs.writeFileSync('src/components/CartDrawer.tsx', code);

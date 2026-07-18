@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { products, categories } from './src/data.ts';
 
 async function startServer() {
   const app = express();
@@ -14,38 +13,16 @@ async function startServer() {
 
   // Sitemap endpoint
   app.get('/sitemap.xml', (req, res) => {
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    let xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://zibbo.in/</loc>
     <priority>1.0</priority>
-  </url>`;
-
-    products.forEach(p => {
-      xml += `
-  <url>
-    <loc>https://zibbo.in/product/${p.id}</loc>
-    <priority>0.8</priority>
-  </url>`;
-    });
-
-    categories.forEach(c => {
-      const categorySlug = c.name.toLowerCase().replace(/ /g, '-');
-      xml += `
-  <url>
-    <loc>https://zibbo.in/collections/${categorySlug}</loc>
-    <priority>0.8</priority>
-  </url>`;
-    });
-
-    xml += `
+  </url>
 </urlset>`;
-
     res.header('Content-Type', 'application/xml');
     res.send(xml);
   });
 
-  
   // Razorpay order creation
   app.post('/api/create-razorpay-order', async (req, res) => {
     try {
@@ -89,7 +66,6 @@ async function startServer() {
       res.status(500).json({ error: 'Failed to verify payment' });
     }
   });
-
 
   // API route for health
   app.get("/api/health", (req, res) => {

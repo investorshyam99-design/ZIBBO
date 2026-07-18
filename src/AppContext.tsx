@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from './types';
-import { products as defaultProducts } from './data';
+
 import { db, auth, OperationType, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { collection, onSnapshot, query, setDoc, doc, deleteDoc, updateDoc, getDoc, getDocs, orderBy, where, serverTimestamp } from 'firebase/firestore';
@@ -68,7 +68,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [products, setProducts] = useState<Product[]>(defaultProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -132,6 +132,42 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                   id
                   title
                   handle
+                  descriptionHtml
+                  collections(first: 5) {
+                    edges {
+                      node {
+                        title
+                      }
+                    }
+                  }
+                  variants(first: 5) {
+                    edges {
+                      node {
+                        id
+                        title
+                        price {
+                          amount
+                        }
+                      }
+                    }
+                  }
+                  media(first: 5) {
+                    edges {
+                      node {
+                        ... on MediaImage {
+                          image {
+                            url
+                          }
+                        }
+                        ... on Video {
+                          sources {
+                            url
+                            mimeType
+                          }
+                        }
+                      }
+                    }
+                  }
                   images(first: 5) {
                     edges {
                       node {

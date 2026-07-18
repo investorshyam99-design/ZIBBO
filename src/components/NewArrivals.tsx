@@ -50,9 +50,7 @@ export default function NewArrivals() {
                       <span className="text-xs text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
                     )}
                   </div>
-                  <button className="w-full bg-brand-navy text-white py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-brand-navy/90 transition-colors">
-                    Buy Now
-                  </button>
+                  
                 </div>
               </div>
             </div>
