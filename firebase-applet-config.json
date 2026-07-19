@@ -1,11 +1,10 @@
 {
-  "projectId": "integral-truck-8vvcq",
-  "appId": "1:776860378952:web:1ed4b5fd3c41615fc8f57d",
-  "apiKey": "AIzaSyBNqqCqefnAXD7jshCjiTZXku2mJ19h7CM",
-  "authDomain": "integral-truck-8vvcq.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-zibboecommerce-7e30f981-1d85-4a96-92f1-663800eaa2ab",
-  "storageBucket": "integral-truck-8vvcq.firebasestorage.app",
-  "messagingSenderId": "776860378952",
-  "measurementId": "",
-  "oAuthClientId": "776860378952-t22f7hb7aejam9a9fnlte9dhm7mlkdee.apps.googleusercontent.com"
+  "projectId": "zibbo-15d89",
+  "appId": "1:269645369714:web:a82dcd18a97ef86d61cdeb",
+  "apiKey": "AIzaSyDlky4znTzx346yWfy3AUGWRhmHJk2HDb8",
+  "authDomain": "zibbo-15d89.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "zibbo-15d89.firebasestorage.app",
+  "messagingSenderId": "269645369714",
+  "measurementId": "G-MGXSWW64TH"
 }
