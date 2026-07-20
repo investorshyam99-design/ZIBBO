@@ -214,13 +214,24 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           // Truly random badge per page load
           const randomBadgeIndex = Math.floor(Math.random() * badges.length);
 
+          const mediaUrls = node.media?.edges?.map((e: any) => {
+            if (e.node.image?.url) return e.node.image.url;
+            if (e.node.sources) {
+              const mp4 = e.node.sources.find((s: any) => s.mimeType === 'video/mp4');
+              return mp4 ? mp4.url : e.node.sources[0].url;
+            }
+            return null;
+          }).filter(Boolean) || [];
+
+          const allImages = mediaUrls.length > 0 ? mediaUrls : node.images.edges.map((e: any) => e.node.url);
+
           return {
             id: String(node.id).split('/').pop() || String(node.id),
             name: node.title,
             price: shopifyPrice,
             originalPrice: originalPrice,
-            image: node.images.edges[0]?.node.url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1000',
-            images: node.images.edges.map((e: any) => e.node.url),
+            image: allImages[0] || node.images.edges[0]?.node.url || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=1000',
+            images: allImages,
             category: node.productType || 'Product',
             rating: parseFloat((Math.random() * (4.9 - 4.0) + 4.0).toFixed(1)),
             reviews: Math.floor(Math.random() * (199 - 50 + 1)) + 50,
